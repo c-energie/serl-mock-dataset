@@ -111,3 +111,5 @@ data/mock/serl_smart_meter_hh_edition08/*
 
 # Ignore VS Code settings folder (contains user-specific settings and should not be committed)
 .vscode/
+
+archive/

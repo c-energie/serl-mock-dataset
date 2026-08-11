@@ -13,6 +13,11 @@ dependencies = [
     "xarray",
 ]
 
+[project.optional-dependencies]
+serl-dataset = [
+    "serl-dataset",
+]
+
 [dependency-groups]
 dev = [
     "jupyter>=1.1.1",
