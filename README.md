@@ -1,4 +1,8 @@
-﻿# serl-mock
+﻿<p align="center">
+  <img src="docs/serl-mock_logo.png" alt="serl-mock logo" width="400"/>
+</p>
+
+# serl-mock
 
 A lightweight Python package that generates mock datasets matching the structure
 and naming conventions of the **SERL (Smart Energy Research Lab) Observatory** data Edition08 release.
@@ -9,38 +13,63 @@ Use it to build and test analysis pipelines locally, without needing access to t
 
 ## What is generated
 
-Running the pipeline writes outputs under `data/mock/` with this structure:
+Running the pipeline writes outputs under `data/mock/`. The full repository layout is:
 
 ```text
-data/mock/
-	bst_dates_to_2030.csv
-	serl_survey_data_dictionary_edition08.csv
-	serl_covid19_survey_data_dictionary_edition08.csv
-	serl_tariff_data_edition08.csv
-	serl_energy_use_in_GB_domestic_buildings_2021_aggregated_statistics_edition07.csv
-
-	serl_epc_data_edition08.csv
-	serl_survey_data_edition08.csv
-	serl_covid19_survey_data_edition08.csv
-	serl_participant_summary_edition08.csv
-	serl_2023_follow_up_survey_data_edition08.csv
-	serl_smart_meter_rt_summary_edition08.csv
-
-	serl_smart_meter_hh_edition08/
-		serl_half_hourly_<YYYY>_<MM>_edition08.csv
-
-	serl_smart_meter_daily_edition08/
-		serl_smart_meter_daily_<YYYY>_edition08.csv
-
-	serl_climate_data_edition08/
-		serl_climate_data_<YYYY>_<MM>_edition08.nc
-		serl_climate_data_<YYYY>_<MM>_edition08.csv
-
-	serl_aggregated_data/
-
-	mock_internal/
-		puprn_master.csv
-		Elec_2023_list_of_exporter_puprns_edition08.csv
+serl-mock/
+├── config/
+│   └── serl_mock.yaml                         # Central configuration (households, seed, edition, profiles…)
+├── docs/
+│   ├── 00_overview.md                         # Project overview and key concepts
+│   ├── 01_structure.md                        # Module descriptions
+│   ├── 02_configuration.md                    # Full configuration reference
+│   ├── 03_generation_model.md                 # How smart-meter values are synthesised
+│   ├── 04_metadata.md                         # SERL column reference
+│   ├── 05_epc_reference.md                    # EPC quirks and region differences (E&W vs Scotland)
+│   ├── 06_working_notes.md                    # Working notes and TODOs
+│   └── documentation/                         # Official SERL dataset PDFs
+├── notebooks/
+│   └── explore_mock_data.ipynb
+├── scripts/
+│   ├── generate_mock_data.py                  # Main entry point — runs the full pipeline
+│   └── generate_bank_holidays_csv.py
+├── src/
+│   └── serl_mock/
+│       ├── generator_contextual_data.py       # EPC, survey, participant summary generators
+│       ├── generator_household_traits.py      # Household trait assignment (PV, HP, EV…)
+│       ├── generator_smartmeter.py            # Half-hourly and daily smart-meter generators
+│       ├── ids.py                             # PUPRN generation and management
+│       ├── paths.py                           # Output path helpers
+│       ├── patterns.py                        # Seasonal and diurnal load patterns
+│       ├── profiles.py                        # Per-household consumption profiles
+│       ├── utils.py                           # Shared utilities
+│       └── weather_downloader.py              # ERA5/CDS download and conversion
+│
+├── data/mock/                                 # Generated output (created at runtime)
+│   ├── bst_dates_to_2030.csv
+│   ├── serl_survey_data_dictionary_edition08.csv
+│   ├── serl_covid19_survey_data_dictionary_edition08.csv
+│   ├── serl_tariff_data_edition08.csv
+│   ├── serl_energy_use_in_GB_domestic_buildings_2021_aggregated_statistics_edition07.csv
+│   ├── serl_epc_data_edition08.csv
+│   ├── serl_survey_data_edition08.csv
+│   ├── serl_covid19_survey_data_edition08.csv
+│   ├── serl_participant_summary_edition08.csv
+│   ├── serl_2023_follow_up_survey_data_edition08.csv
+│   ├── serl_smart_meter_rt_summary_edition08.csv
+│   ├── serl_smart_meter_hh_edition08/
+│   │   └── serl_half_hourly_<YYYY>_<MM>_edition08.csv
+│   ├── serl_smart_meter_daily_edition08/
+│   │   └── serl_smart_meter_daily_<YYYY>_edition08.csv
+│   ├── serl_climate_data_edition08/           # Populated only when weather download is enabled
+│   │   ├── serl_climate_data_<YYYY>_<MM>_edition08.nc
+│   │   └── serl_climate_data_<YYYY>_<MM>_edition08.csv
+│   ├── serl_aggregated_data/                  # placeholder
+│   └── mock_internal/
+│       ├── puprn_master.csv
+│       ├── household_traits.csv
+│       └── Elec_2023_list_of_exporter_puprns_edition08.csv
+└── pyproject.toml
 ```
 
 Notes:
@@ -62,6 +91,8 @@ The code does enforce consistency for key links used in downstream testing, incl
 - Deterministic household trait assignment from `mock_internal/household_traits.csv`.
 - PV ownership consistency across contextual fields and exporter list generation.
 - Meter-trait consistency for gas/export availability in smart-meter and read-type summary outputs.
+- Solar-thermal trait consistency between `household_traits.csv` and the EPC / survey solar-water-heating fields.
+- Nation assignment (England & Wales vs Scotland) shared between EPC records and the participant summary's `Region`.
 
 ---
 
@@ -78,8 +109,14 @@ cd serl-mock
 
 2. Install uv (if not already installed):
 
+**Windows (PowerShell):**
 ```bash
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+**macOS / Linux:**
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
 3. Sync the project environment:
@@ -114,6 +151,7 @@ Key options you can adjust before running the generator:
 | `household_traits.ev_fraction` | Share of households with an EV | `0.10` |
 | `household_traits.gas_meter_fraction` | Share of households with a gas meter | `0.85` |
 | `household_traits.export_meter_fraction` | Share of households with an export meter | `0.15` |
+| `household_traits.solar_thermal_fraction` | Share of households with solar thermal (solar water heating) | `0.02` |
 | `profiles.base_elec_mean_wh` | Mean baseline electricity per half-hour period (Wh) | `175` |
 | `profiles.base_gas_mean_wh` | Mean baseline gas at peak heating demand (Wh) | `1500` |
 | `patterns.elec_seasonal_amplitude` | Seasonal swing around annual mean electricity | `0.3` |
@@ -162,11 +200,45 @@ uv run python scripts/generate_mock_data.py --skip-weather
 | How smart-meter values are generated | [docs/03_generation_model.md](docs/03_generation_model.md) |
 | All configuration options | [docs/02_configuration.md](docs/02_configuration.md) |
 | SERL dataset column reference | [docs/04_metadata.md](docs/04_metadata.md) |
+| EPC quirks and region differences (England & Wales vs Scotland) | [docs/05_epc_reference.md](docs/05_epc_reference.md) |
+| Working notes and TODOs | [docs/06_working_notes.md](docs/06_working_notes.md) |
 
 ---
 
 ## Generated data is not real
 
-The output files are for **pipeline testing and local development only**. They do not
-represent real households or real consumption, and should never be used for analysis
-or reporting.
+The output files are for **pipeline testing and local development only**. They do not represent real households or real consumption, and should never be used for analysis or reporting.
+
+---
+
+## Citation
+
+If you use this package in your work, please cite it using the Zenodo DOI:
+
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.20544813-blue)](https://doi.org/10.5281/zenodo.20544813)
+
+```bibtex
+@software{serl_mock,
+  author  = {Barsanti, Matteo},
+  title   = {serl-mock: Dummy version of SERL Observatory data for pipeline development and testing},
+  year    = {2026},
+  doi     = {10.5281/zenodo.20544813},
+  url     = {https://github.com/BarsantiMatteo/serl-mock}
+}
+```
+
+
+---
+
+## Contributing
+
+Bug reports, suggestions, and pull requests are welcome.
+
+- **Questions or feedback** — open a [GitHub issue](https://github.com/BarsantiMatteo/serl-mock/issues) or email [m.barsanti@ucl.ac.uk](mailto:m.barsanti@ucl.ac.uk).
+- **Bug fixes or improvements** — fork the repository, make your changes on a branch, and open a pull request against `master`.
+
+---
+
+## License
+
+This project is released under the [MIT License](https://opensource.org/license/mit).

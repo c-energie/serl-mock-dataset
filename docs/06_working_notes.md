@@ -6,6 +6,8 @@ These are some working notes and TODOs that have been tracked as the project pro
     [ ] Add the possibility to select also the start and end months for the generated data.
     [ ] Add the possibility to generate **tariff data** csv files -  `serl_tariff_data*.csv`
     [ ] Check and fix follow-up survey dictionary.
+    [ ] `generate_list_of_exporters()` keys the exporter PUPRN list on `has_pv`, not `has_export_meter` — decide whether the file should track PV or export-meter households and align the name/logic.
+    [ ] `profiles.gas_fraction` / `HouseholdProfile.has_gas` is generated but never read by `HHSmartMeterGenerator` (gas gating actually comes from `household_traits.gas_meter_fraction`) — either wire it in or remove the dead field.
 
     [x] improve generation of follow up survey, develop a csv dictionary similar to the one used for the main survey.
     [x] Move additonal csv file used for mock data generation into a dedicated folder (puprn_master, Elec_2023_list_of_exporters..)

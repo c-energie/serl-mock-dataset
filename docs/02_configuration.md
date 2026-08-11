@@ -31,19 +31,22 @@ Controls appliance ownership and meter traits that affect generated fields.
 
 ```yaml
 household_traits:
-  pv_fraction: 0.07  # Share of households with PV
-  hp_fraction: 0.00  # Reserved for heat pump modelling
-  ev_fraction: 0.00  # Reserved for EV modelling
-  gas_meter_fraction: 0.85     # Share of households with a gas meter
-  export_meter_fraction: 0.07  # Share of households with an electricity export meter
+  pv_fraction: 0.15   # Share of households with PV
+  hp_fraction: 0.07   # Share of households with a heat pump
+  ev_fraction: 0.10   # Share of households with an EV
+  gas_meter_fraction: 0.85    # Share of households with a gas meter
+  export_meter_fraction: 0.15 # Share of households with an electricity export meter
+  solar_thermal_fraction: 0.02 # Share of households with solar thermal (solar water heating)
 ```
 
 - Only selected export-meter households get non-zero `Elec_act_exp_hh_Wh` and `Elec_react_exp_hh_varh`.
 - Non-export-meter households keep export at zero.
+- `gas_meter_fraction` is what actually gates gas generation in the smart-meter and rt-summary outputs (via `has_gas_meter` in `household_traits.csv`) — see the note on `profiles.gas_fraction` below, which is a separate, currently-unused setting.
 - Import and gas generation are unchanged by PV assignment.
-- The exporter list file (`Elec_<year>_list_of_exporter_puprns_editionXX.csv`) uses the same PV selection.
-- `hp_fraction` drives heat-pump survey trait fields (`A1607` when present).
-- `ev_fraction` drives EV survey fields (`C5` / `C6` in SERL survey and `B3_4_yes` / `D5` in follow-up survey).
+- The exporter list file (`Elec_<year>_list_of_exporter_puprns_editionXX.csv`) uses the same PV selection (it lists households with `has_pv = 1`, not a separate export-only sample).
+- `hp_fraction` drives heat-pump survey trait fields (`A1607` in the SERL survey when present, and the `B2_5_yes` heating-type field in the follow-up survey).
+- `ev_fraction` drives EV survey fields (`C5` / `C6` in the SERL survey and `B3_4_yes` / `D5` / `D6` in the follow-up survey).
+- `solar_thermal_fraction` drives `solarWaterHeatingFlag` in the EPC data and the `A12_Taps_SWH` / `A12_Shower_SWH` solar-water-heating fields in the SERL survey.
 
 ---
 
@@ -62,6 +65,8 @@ profiles:
 
 > To shift the whole population to higher consumption, increase `base_elec_mean_wh` or `base_gas_mean_wh`.  
 > To make households more similar to each other, decrease the `_std` values.
+
+> **Note:** `gas_fraction` here only sets the (currently unused) `has_gas` field on each `HouseholdProfile`. The gas meter gate actually applied when generating smart-meter and rt-summary data is `household_traits.gas_meter_fraction` above. Keep the two in sync if you rely on gas presence being consistent with the rest of the pipeline.
 
 ---
 
@@ -91,12 +96,23 @@ Contextual output filenames default to SERL Edition 08 naming.  They can be over
 
 ```yaml
 filenames:
-  epc:              epc_data
+  epc:              serl_epc_data
   survey:           serl_survey_data
+  covid19_survey:   serl_covid19_survey_data
   summary:          serl_participant_summary
   followup_survey:  serl_2023_follow_up_survey_data
   exporters_prefix: Elec
 ```
+
+Any other keys under `filenames:` (e.g. `followup_prefix`, `tariff_data`) are currently ignored — the tariff-data placeholder name is fixed to `serl_tariff_data_edition<edition>.csv` in `scripts/generate_mock_data.py`.
+
+## Year for the exporter list
+
+```yaml
+year: 2023   # Not set by default — the exporter-list generator falls back to 2023
+```
+
+The contextual generator uses this top-level `year` (default `2023`, independent of `start_year`/`end_year`) only to name the exporter list file: `mock_internal/Elec_<year>_list_of_exporter_puprns_edition<edition>.csv`. Set it explicitly if `start_year`/`end_year` cover a different period, otherwise the exporter file will keep the `2023` label regardless of the smart-meter data's actual year.
 
 ---
 
@@ -148,7 +164,8 @@ weather:
 > url: https://cds.climate.copernicus.eu/api
 > key: <your-api-key>
 > ```
-> Use `--skip-weather` to bypass the download step if credentials are unavailable.
+> Alternatively set the `CDSAPI_URL` and `CDSAPI_KEY` environment variables.
+> Use `--skip-weather` to bypass the download step if credentials are unavailable — the pipeline also auto-detects a missing/invalid CDS client and falls back to an empty `serl_climate_data_edition08/` folder with a warning instead of failing.
 
 ### Idempotent execution
 

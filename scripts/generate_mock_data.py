@@ -49,7 +49,7 @@ from src.serl_mock.utils import read_config
 
 
 
-def run_all(skip_weather: bool = False):
+def run_all(skip_weather: bool = False, survey_only: bool = False):
     cfg_path = CONFIG_DIR / "serl_mock.yaml"
     cfg = read_config(cfg_path)
 
@@ -93,75 +93,80 @@ def run_all(skip_weather: bool = False):
             p.write_text("# placeholder\n", encoding="utf-8")
             print(f"  Created {fname}")
 
-    print("\nStep 1: Generating PUPRNs and household device traits")
     puprn_csv = MOCK_INTERNAL_DIR / "puprn_master.csv"
-    puprns = make_alphanumeric_ids_ordered(
-        n=cfg.get("n_households", 100),
-        seed=cfg.get("seed", 42),
-        length=cfg.get("puprn", {}).get("length", 8)
-    )
-    write_puprn_list_csv(puprns, puprn_csv)
-    print(f"  {len(puprns)} PUPRNs written to {puprn_csv}")
-
     traits_csv = MOCK_INTERNAL_DIR / "household_traits.csv"
-    traits_cfg = cfg.get("household_traits", {})
-    pv_fraction = float(traits_cfg.get("pv_fraction", 0.07))
-    hp_fraction = float(traits_cfg.get("hp_fraction", 0.0))
-    ev_fraction = float(traits_cfg.get("ev_fraction", 0.0))
-    gas_meter_fraction = float(traits_cfg.get("gas_meter_fraction", 0.85))
-    export_meter_fraction = float(traits_cfg.get("export_meter_fraction", 0.15))
-    
-    traits_df = generate_household_traits(
-        puprns=puprns,
-        pv_fraction=pv_fraction,
-        hp_fraction=hp_fraction,
-        ev_fraction=ev_fraction,
-        gas_meter_fraction=gas_meter_fraction,
-        export_meter_fraction=export_meter_fraction,
-        seed=cfg.get("seed", 42),
-        edition=edition,
-    )
-    write_household_traits(traits_df, traits_csv)
-    print(f"  Household traits written to {traits_csv}")
-    print(f"    PV households: {(traits_df['has_pv'] == 1).sum()}")
-    print(f"    HP households: {(traits_df['has_hp'] == 1).sum()}")
-    print(f"    EV households: {(traits_df['has_ev'] == 1).sum()}")
-    print(f"    Gas meter households: {(traits_df['has_gas_meter'] == 1).sum()}")
-    print(f"    Export meter households: {(traits_df['has_export_meter'] == 1).sum()}")
 
-    print(f"\nStep 2: Generating half-hourly smart meter data "
-          f"({cfg.get('start_year')}–{cfg.get('end_year')}, "
-          f"edition {cfg.get('edition', '08')})")
-    gen_sm = HHSmartMeterGenerator(
-        config_path=str(cfg_path),
-        puprn_list_path=str(puprn_csv),
-    )
-    gen_sm.generate_all(outfolder=MOCK_HH_DIR)
+    if survey_only:
+        if not puprn_csv.exists() or not traits_csv.exists():
+            sys.exit(
+                "ERROR: --survey-only requires a previous full run. "
+                f"Missing: {', '.join(str(p) for p in [puprn_csv, traits_csv] if not p.exists())}"
+            )
+        print("  Skipping steps 1-4 (--survey-only).")
+    else:
+        print("\nStep 1: Generating PUPRNs and household device traits")
+        puprns = make_alphanumeric_ids_ordered(
+            n=cfg.get("n_households", 100),
+            seed=cfg.get("seed", 42),
+            length=cfg.get("puprn", {}).get("length", 8)
+        )
+        write_puprn_list_csv(puprns, puprn_csv)
+        print(f"  {len(puprns)} PUPRNs written to {puprn_csv}")
 
-    print(f"\nStep 3: Generating daily smart meter data "
-          f"({cfg.get('start_year')}–{cfg.get('end_year')}, "
-          f"edition {cfg.get('edition', '08')})")
-    gen_daily = DailySmartMeterGenerator(
-        config_path=str(cfg_path),
-        puprn_list_path=str(puprn_csv),
-    )
-    gen_daily.generate_all(outfolder=MOCK_DAILY_DIR)
+        traits_cfg = cfg.get("household_traits", {})
+        traits_df = generate_household_traits(
+            puprns=puprns,
+            pv_fraction=float(traits_cfg.get("pv_fraction", 0.07)),
+            hp_fraction=float(traits_cfg.get("hp_fraction", 0.0)),
+            ev_fraction=float(traits_cfg.get("ev_fraction", 0.0)),
+            gas_meter_fraction=float(traits_cfg.get("gas_meter_fraction", 0.85)),
+            export_meter_fraction=float(traits_cfg.get("export_meter_fraction", 0.15)),
+            solar_thermal_fraction=float(traits_cfg.get("solar_thermal_fraction", 0.0)),
+            seed=cfg.get("seed", 42),
+            edition=edition,
+        )
+        write_household_traits(traits_df, traits_csv)
+        print(f"  Household traits written to {traits_csv}")
+        print(f"    PV households: {(traits_df['has_pv'] == 1).sum()}")
+        print(f"    HP households: {(traits_df['has_hp'] == 1).sum()}")
+        print(f"    EV households: {(traits_df['has_ev'] == 1).sum()}")
+        print(f"    Solar thermal households: {(traits_df['has_solar_thermal'] == 1).sum()}")
+        print(f"    Gas meter households: {(traits_df['has_gas_meter'] == 1).sum()}")
+        print(f"    Export meter households: {(traits_df['has_export_meter'] == 1).sum()}")
 
-    print(f"\nStep 3b: Generating read-type data quality summary "
-          f"(edition {cfg.get('edition', '08')})")
-    gen_rt = ReadTypeDataQualitySummaryGenerator(
-        config_path=str(cfg_path),
-        puprn_list_path=str(puprn_csv),
-    )
-    gen_rt.generate_and_write(
-        hh_folder=MOCK_HH_DIR,
-        daily_folder=MOCK_DAILY_DIR,
-        outfolder=MOCK_DIR,
-    )
+        print(f"\nStep 2: Generating half-hourly smart meter data "
+              f"({cfg.get('start_year')}–{cfg.get('end_year')}, "
+              f"edition {cfg.get('edition', '08')})")
+        gen_sm = HHSmartMeterGenerator(
+            config_path=str(cfg_path),
+            puprn_list_path=str(puprn_csv),
+        )
+        gen_sm.generate_all(outfolder=MOCK_HH_DIR)
+
+        print(f"\nStep 3: Generating daily smart meter data "
+              f"({cfg.get('start_year')}–{cfg.get('end_year')}, "
+              f"edition {cfg.get('edition', '08')})")
+        gen_daily = DailySmartMeterGenerator(
+            config_path=str(cfg_path),
+            puprn_list_path=str(puprn_csv),
+        )
+        gen_daily.generate_all(outfolder=MOCK_DAILY_DIR)
+
+        print(f"\nStep 3b: Generating read-type data quality summary "
+              f"(edition {cfg.get('edition', '08')})")
+        gen_rt = ReadTypeDataQualitySummaryGenerator(
+            config_path=str(cfg_path),
+            puprn_list_path=str(puprn_csv),
+        )
+        gen_rt.generate_and_write(
+            hh_folder=MOCK_HH_DIR,
+            daily_folder=MOCK_DAILY_DIR,
+            outfolder=MOCK_DIR,
+        )
 
     print("\nStep 4: Downloading ERA5 weather data and converting to CSV")
-    if skip_weather:
-        print("  Skipped (--skip-weather flag set).")
+    if survey_only or skip_weather:
+        print("  Skipped.")
     else:
         try:
             dl = WeatherDownloader(config_path=str(cfg_path))
@@ -200,8 +205,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--skip-weather",
         action="store_true",
-        help="Skip the ERA5 weather data download step (step 3).",
+        help="Skip the ERA5 weather data download step (step 4).",
+    )
+    parser.add_argument(
+        "--survey-only",
+        action="store_true",
+        help="Regenerate only the survey/contextual data (step 5). Requires a prior full run.",
     )
     args = parser.parse_args()
-    run_all(skip_weather=args.skip_weather)
+    run_all(skip_weather=args.skip_weather, survey_only=args.survey_only)
 

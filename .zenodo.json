@@ -1,0 +1,19 @@
+{
+  "creators": [
+    {
+      "name": "Barsanti, Matteo",
+      "affiliation": "University College London",
+      "orcid": "0000-0001-5378-9939"
+    }
+  ],
+  "title": "serl-mock: Dummy version of SERL Observatory data for pipeline development and testing",
+  "license": "MIT",
+  "keywords": [
+    "SERL",
+    "smart meter",
+    "contextual data",
+    "mock data",
+    "energy consumption",
+    "pipeline development"
+  ]
+}

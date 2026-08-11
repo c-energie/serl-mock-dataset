@@ -36,9 +36,11 @@ One `HouseholdProfile` is drawn per PUPRN at initialisation time using the share
 | `base_elec_wh` | Baseline electricity consumption per HH period (Wh) at unit multipliers |
 | `base_gas_wh` | Baseline gas consumption at peak winter heating demand (Wh) |
 | `elec_variance` | Noise level — std = mean × variance (drawn from Uniform[0.4, 0.8]) |
-| `has_gas` | Whether the household has a gas meter (Bernoulli with probability `gas_fraction`) |
+| `has_gas` | Bernoulli draw with probability `profiles.gas_fraction`; currently computed but **not** read by the generator (see below) |
 
 Values are drawn from Gaussian distributions truncated to realistic minima.  The population-level means and standard deviations are set in the `profiles:` section of `serl_mock.yaml`.
+
+> **Gas-meter gating in practice:** `HHSmartMeterGenerator` does not use `HouseholdProfile.has_gas`. The `has_gas(h)` term in the formula above is actually taken from `has_gas_meter` in `mock_internal/household_traits.csv`, which is controlled by `household_traits.gas_meter_fraction` (see [02_configuration.md](02_configuration.md)). The two fractions default to the same value (0.85) but are independent settings.
 
 ---
 
@@ -100,9 +102,10 @@ Outside the heating season (`gas_seasonal < gas_heating_threshold`) gas is zero 
 
 - PV households are selected deterministically from the PUPRN list using `household_traits.pv_fraction`.
 - Export-meter households are selected deterministically using `household_traits.export_meter_fraction`.
-- Only export-meter households receive non-zero electricity export values (`Elec_act_exp_hh_Wh`, `Elec_react_exp_hh_varh`).
+- Only export-meter households receive non-zero electricity export values (`Elec_act_exp_hh_Wh`, `Elec_react_exp_hh_varh`); the export profile follows a simple daylight-shaped solar curve (`sin` over the day, seasonally scaled) rather than the household's own PV trait.
 - Non-export-meter households have zero export values.
 - Import electricity and gas generation logic is unchanged by PV/export-meter assignment.
+- Note: `has_pv` and `has_export_meter` are independent traits — a household can have PV without an export meter (no export values generated) or vice versa. The mock_internal exporter list (`Elec_<year>_list_of_exporter_puprns_editionXX.csv`) is keyed on `has_pv`, not `has_export_meter` — see [02_configuration.md](02_configuration.md).
 
 ## Cross-generator consistency caveat
 
@@ -114,7 +117,7 @@ and aligned PV/meter trait usage in the relevant generators.
 
 ---
 
-## Edition 07 timestamp rules
+## Edition 07/08 timestamp rules
 
 | Rule | Implementation |
 |---|---|

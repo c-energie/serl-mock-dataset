@@ -1,13 +1,12 @@
 """
-Generate uk_bank_holidays_england_wales_scotland.csv from the official
-UK government bank holidays JSON (https://www.gov.uk/bank-holidays.json).
+Fetch UK bank holidays from the official gov.uk JSON and write
+data/reference/uk_bank_holidays_england_wales_scotland.csv.
 
-Run this once locally before uploading to the TRE:
+Run this locally whenever the reference file needs updating:
 
-    uv run --project env/ python project/scripts/preprocessing/generate_bank_holidays_csv.py
+    uv run python scripts/generate_bank_holidays_csv.py
 
-Output: local/data/mock/uk_bank_holidays_england_wales_scotland.csv
-        (copy to the appropriate TRE processed_csv/ directory before running the pipeline)
+The output is committed to the repo and read by the mock pipeline.
 """
 
 import json
@@ -20,7 +19,7 @@ YEAR_RANGE = range(2019, 2026)
 
 OUTPUT_PATH = (
     Path(__file__).resolve().parents[1]
-    / "data" / "mock"
+    / "data" / "reference"
     / "uk_bank_holidays_england_wales_scotland.csv"
 )
 

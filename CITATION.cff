@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "serl-mock: Dummy version of SERL Observatory data for pipeline development and testing"
+doi: 10.5281/zenodo.20544813
+url: https://github.com/BarsantiMatteo/serl-mock
+license: MIT
+year-released: 2026
+authors:
+  - family-names: Barsanti
+    given-names: Matteo
+    affiliation: University College London
+    email: m.barsanti@ucl.ac.uk
+    orcid: "https://orcid.org/0000-0001-5378-9939"

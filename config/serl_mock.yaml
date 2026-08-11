@@ -5,15 +5,15 @@
 # -------------------------
 # Global
 # -------------------------
-n_households: 100
+n_households: 1000
 seed: 42  # Random seed for reproducibility of synthetic data generation
 edition: "08"
 
 # -------------------------
 # Time period for smart-meter data
 # -------------------------
-start_year: 2019
-end_year: 2019
+start_year: 2024
+end_year: 2024
 
 # -------------------------
 # Household traits
@@ -25,6 +25,7 @@ household_traits:
   ev_fraction: 0.10  # share of households with EV in survey data
   gas_meter_fraction: 0.85  # share of households with a gas meter
   export_meter_fraction: 0.15  # share of households with electricity export meter
+  solar_thermal_fraction: 0.02  # share of households with solar thermal
 
 # -------------------------
 # Household profiles
@@ -76,10 +77,9 @@ weather:
     - "10m_v_component_of_wind"
 
   # Bounding box [north, west, south, east] in decimal degrees
-  # Default covers Great Britain and Northern Ireland
   area:
-    - 60.0   # north
-    - -8.0   # west
+    - 52.0   # north
+    - -4.0   # west
     - 49.0   # south
     -  2.0   # east
 

@@ -167,8 +167,11 @@ C5,it for you Very easy; F airly ea sy; Ne ither ea sy nor difficult; Fair ly di
 C6,leave Daily; Most days; Rar ely; neve r; Don 't kno w;,,"During this win te r, do you your home to go to heated Prefer not to say spaces elsewh ere with the main purpose of kee pi ng warm?",FALSE,Primary
 D1,,,"How many peo pl e currentl y live i n your househ ol d, includin g you?",FALSE,Primary
 D1_flag,TRUE/FALSE,,,FALSE,Derived
-D2_0_5,0-5 years 0 people; 1 person; 2 people; 3 peop le; 4 or 6-15 years 0 people; 1 person; 2 people; 3 peop le; 4 or 16-24 years 0 people; 1 person; 2 people; 3 peop le; 4 or,,more people more people more people,FALSE,Primary
-D2_24_44,25-44 years 0 people; 1 person; 2 people; 3 peop le; 4 or 45-64 years 0 people; 1 person; 2 people; 3 peop le; 4 or,,more people more people,FALSE,Primary
+D2_0_5,0 people; 1 person; 2 people; 3 people; 4 or more people,,0-5 years,FALSE,Primary
+D2_6-15,0 people; 1 person; 2 people; 3 people; 4 or more people,,6-15 years,FALSE,Primary
+D2_16-24,0 people; 1 person; 2 people; 3 people; 4 or more people,,16-24 years,FALSE,Primary
+D2_24_44,0 people; 1 person; 2 people; 3 people; 4 or more people,,25-44 years,FALSE,Primary
+D2_45-64,0 people; 1 person; 2 people; 3 people; 4 or more people,,45-64 years,FALSE,Primary
 D2_65_74,65-74 years 0 people; 1 person; 2 people; 3 peop le; 4 or,,more people,FALSE,Primary
 D2_75_85,75-84 years 0 people; 1 person; 2 people; 3 peop le; 4 or,,more people,FALSE,Primary
 D2_85plus,85+ years 0 people; 1 person; 2 people; 3 peop le; 4 or,,more people,FALSE,Primary
