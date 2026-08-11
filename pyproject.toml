@@ -3,7 +3,7 @@ name = "serl-mock"
 version = "0.1.0"
 description = "Generates dummy SERL-style datasets for local development and pipeline testing."
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.11.4, <3.14"
 dependencies = [
     "cdsapi>=0.7.7",
     "netcdf4",
