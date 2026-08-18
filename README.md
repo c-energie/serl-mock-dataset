@@ -29,7 +29,8 @@ serl-mock/
 │   ├── 06_working_notes.md                    # Working notes and TODOs
 │   └── documentation/                         # Official SERL dataset PDFs
 ├── notebooks/
-│   └── explore_mock_data.ipynb
+│   ├── explore_mock_data.ipynb
+│   └── example_dataset_cohort.ipynb           # Worked serl-dataset DatasetCohort on the mock release
 ├── scripts/
 │   ├── generate_mock_data.py                  # Main entry point — runs the full pipeline
 │   └── generate_bank_holidays_csv.py

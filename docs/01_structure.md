@@ -46,7 +46,8 @@ serl-mock/
 │   └── 06_working_notes.md         # Working notes and TODOs
 │
 ├── notebooks/
-│   └── explore_mock_data.ipynb     # Example notebook for exploring generated output
+│   ├── explore_mock_data.ipynb     # Example notebook for exploring generated output
+│   └── example_dataset_cohort.ipynb  # Builds a serl-dataset DatasetCohort on the mock release
 │
 ├── scripts/
 │   ├── generate_mock_data.py       # Entry point: runs the full pipeline

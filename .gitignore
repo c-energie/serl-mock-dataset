@@ -65,6 +65,10 @@ working_notes.md
 *.ipynb_convert/
 **/.ipynb_checkpoints/
 
+# Scratch working directory written by notebooks/example_dataset_cohort.ipynb -- configs,
+# logs, results database, the DuckDB store and the parquet cache. All regenerable.
+notebooks/example_cohort_workspace/
+
 # -----------------------------------------------------------
 # EDITOR / SYSTEM FILES
 # -----------------------------------------------------------
