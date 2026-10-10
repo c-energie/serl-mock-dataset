@@ -14,8 +14,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-serl-dataset = [
-    "serl-dataset",
+serl-cohort = [
+    "serl-cohort",
 ]
 
 [dependency-groups]
