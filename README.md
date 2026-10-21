@@ -11,6 +11,18 @@ Use it to build and test analysis pipelines locally, without needing access to t
 
 ---
 
+## Contents
+
+- [What is generated](#what-is-generated)
+  - [Consistency caveat for dummy data](#consistency-caveat-for-dummy-data)
+- [Quick start](#quick-start)
+  - [Weather data (ERA5 via CDS API)](#weather-data-era5-via-cds-api)
+- [Documentation](#documentation)
+- [Generated data is not real](#generated-data-is-not-real)
+- [Citation](#citation)
+- [Contributing](#contributing)
+- [License](#license)
+
 ## What is generated
 
 Running the pipeline writes outputs under `data/mock/`. The full repository layout is:
